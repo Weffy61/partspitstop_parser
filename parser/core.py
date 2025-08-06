@@ -57,11 +57,11 @@ async def fetch_html(url: str, retries: int = 5, delay: float = 2.0, global_time
                 log(f'[{attempt}/{retries}] Timeout fetching {url}')
             except Exception as e:
                 log(f'ERROR fetching {url}: {e}')
-                if attempt < retries:
-                    await asyncio.sleep(delay)
-                else:
-                    log(f'GAVE UP: {url}')
-                    return ''
+        if attempt < retries:
+            await asyncio.sleep(delay)
+        else:
+            log(f'GAVE UP: {url}')
+            return ''
 
 
 async def enqueue_url(url: str, queue: asyncio.Queue, stage: str) -> None:
