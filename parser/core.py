@@ -42,14 +42,19 @@ async def save_part(part: dict) -> None:
         await f.flush()
 
 
-async def fetch_html(url: str, retries: int = 3, delay: float = 2.0) -> str:
+async def fetch_html(url: str, retries: int = 5, delay: float = 2.0, global_timeout: float = 40.0) -> str:
     for attempt in range(1, retries + 1):
         async with semaphore:
             try:
                 proxy = proxy_manager.get() if proxy_manager else None
-                log(f"[{attempt}/3] Fetching: {url} {f'(proxy: {proxy})' if proxy else ''}")
-                resp = await session.get(url, timeout=30, proxy=proxy)
+                log(f"[{attempt}/{retries}] Fetching: {url} {f'(proxy: {proxy})' if proxy else ''}")
+                resp = await asyncio.wait_for(
+                    session.get(url, timeout=30, proxy=proxy),
+                    timeout=global_timeout
+                )
                 return resp.text
+            except asyncio.TimeoutError:
+                log(f'[{attempt}/{retries}] Timeout fetching {url}')
             except Exception as e:
                 log(f'ERROR fetching {url}: {e}')
                 if attempt < retries:
