@@ -1,4 +1,5 @@
 from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import FSInputFile
 from config import BOT_TOKEN, USER_ID
