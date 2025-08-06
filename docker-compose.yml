@@ -1,0 +1,10 @@
+services:
+  parser:
+    working_dir: /app
+    build: .
+    volumes:
+      - ./data:/app/data
+    command: >
+      python run.py --proxies /app/data/proxies.txt
+    env_file:
+      - .env
