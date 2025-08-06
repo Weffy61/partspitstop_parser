@@ -15,6 +15,7 @@ session = AsyncSession(impersonate='safari_ios')
 
 async def main(args):
     proxy_manager = ProxyManager(args.proxies)
+    core.proxy_manager = proxy_manager
     await send_start_message()
 
     html = await core.fetch_html(BASE_URL)
