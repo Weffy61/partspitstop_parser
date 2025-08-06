@@ -7,8 +7,8 @@ from config import BOT_TOKEN, USER_ID
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 
-async def send_start_message():
-    await bot.send_message(USER_ID, "🚀 Парсинг начат")
+async def send_message(message: str):
+    await bot.send_message(USER_ID, message)
 
 
 async def send_end_message(filepath: str):
