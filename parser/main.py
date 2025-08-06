@@ -3,12 +3,11 @@ import asyncio
 from bs4 import BeautifulSoup
 from curl_cffi.requests import AsyncSession
 
-import core
-import workers
 from config import BASE_URL, OUTPUT_FILE
 from notifications import send_start_message, send_end_message
-from proxy_manager import ProxyManager
-from utils import normalize_url, log
+from . import workers, core
+from .proxy_manager import ProxyManager
+from .utils import normalize_url, log
 
 session = AsyncSession(impersonate='safari_ios')
 
@@ -16,6 +15,7 @@ session = AsyncSession(impersonate='safari_ios')
 async def main(args):
     proxy_manager = ProxyManager(args.proxies)
     core.proxy_manager = proxy_manager
+    core.session = session
     await send_start_message()
 
     html = await core.fetch_html(BASE_URL)

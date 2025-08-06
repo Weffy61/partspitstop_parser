@@ -5,15 +5,14 @@ import json
 from bs4 import BeautifulSoup
 
 from config import OUTPUT_FILE
-from utils import log
-
-from parser.main import session
+from .utils import log
 
 seen_skus = set()
 sku_lock = asyncio.Lock()
 visited_lock = asyncio.Lock()
 
 proxy_manager = None
+session = None
 
 visited = {
     'category': set(),
