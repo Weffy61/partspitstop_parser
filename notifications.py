@@ -17,3 +17,10 @@ async def send_end_message(filepath: str):
         await bot.send_document(USER_ID, file, caption="✅ Парсинг окончен")
     except Exception as e:
         await bot.send_message(USER_ID, f"⚠️ Ошибка при отправке файла: {e}")
+
+
+async def send_error_message(error: Exception):
+    try:
+        await bot.send_message(USER_ID, f"❌ Ошибка:\n{str(error)}")
+    except Exception as e:
+        print(f"[ERROR] Ошибка при отправке сообщения об ошибке: {e}")
