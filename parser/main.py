@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import Queue
 
 from bs4 import BeautifulSoup
 from curl_cffi.requests import AsyncSession
@@ -12,74 +13,14 @@ from .utils import normalize_url, log
 session = AsyncSession(impersonate='safari_ios')
 
 
-async def collect_categories():
-    category_workers = [
-        asyncio.create_task(workers.category_worker())
-        for _ in range(10)
-    ]
-
+async def collect(worker_func, queue: Queue, workers_count: int):
+    tasks = [asyncio.create_task(worker_func()) for _ in range(workers_count)]
     try:
-        await core.category_queue.join()
+        await queue.join()
     finally:
-        for w in category_workers:
-            w.cancel()
-        await asyncio.gather(*category_workers, return_exceptions=True)
-
-
-async def collect_years():
-    years_workers = [
-        asyncio.create_task(workers.year_worker())
-        for _ in range(15)
-    ]
-
-    try:
-        await core.year_queue.join()
-    finally:
-        for w in years_workers:
-            w.cancel()
-        await asyncio.gather(*years_workers, return_exceptions=True)
-
-
-async def collect_models():
-    models_workers = [
-        asyncio.create_task(workers.model_worker())
-        for _ in range(15)
-    ]
-
-    try:
-        await core.model_queue.join()
-    finally:
-        for w in models_workers:
-            w.cancel()
-        await asyncio.gather(*models_workers, return_exceptions=True)
-
-
-async def collect_parts():
-    parts_workers = [
-        asyncio.create_task(workers.parts_worker())
-        for _ in range(15)
-    ]
-
-    try:
-        await core.parts_queue.join()
-    finally:
-        for w in parts_workers:
-            w.cancel()
-        await asyncio.gather(*parts_workers, return_exceptions=True)
-
-
-async def collect_details():
-    details_workers = [
-        asyncio.create_task(workers.details_worker())
-        for _ in range(15)
-    ]
-
-    try:
-        await core.details_queue.join()
-    finally:
-        for w in details_workers:
-            w.cancel()
-        await asyncio.gather(*details_workers, return_exceptions=True)
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
 
 
 async def main(args):
@@ -96,19 +37,19 @@ async def main(args):
             href = normalize_url(a.get('href'), BASE_URL)
             await core.enqueue_url(href, core.category_queue, 'category')
 
-        await collect_categories()
+        await collect(workers.category_worker, core.category_queue, 10)
         await send_message('Собраны категории')
 
-        await collect_years()
+        await collect(workers.year_worker, core.year_queue, 15)
         await send_message('Собраны года')
 
-        await collect_models()
+        await collect(workers.model_worker, core.model_queue, 15)
         await send_message('Собраны модели')
 
-        await collect_parts()
+        await collect(workers.parts_worker, core.parts_queue, 15)
         await send_message('Собраны части')
 
-        await collect_details()
+        await collect(workers.details_worker, core.details_queue, 15)
         await send_message('Собраны детали')
 
         await session.close()
