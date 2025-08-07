@@ -1,10 +1,13 @@
 import asyncio
+import random
+
 import aiofiles
 import json
 
 from bs4 import BeautifulSoup
+from curl_cffi import AsyncSession
 
-from config import OUTPUT_FILE
+from config import OUTPUT_FILE, IMPERSONATE_PROFILES
 from .utils import log
 
 seen_skus = set()
@@ -49,6 +52,7 @@ async def fetch_html(
         global_timeout:
         float = 40.0
 ) -> str:
+    global session
     for attempt in range(1, retries + 1):
         async with semaphore:
             try:
@@ -59,7 +63,9 @@ async def fetch_html(
                     timeout=global_timeout
                 )
                 if resp.status_code == 403 and is_blocked_page(resp.text):
-                    log(f"[{attempt}/{retries}] Cloudflare block detected by <title> at {url}")
+                    log(f"[{attempt}/{retries}] Cloudflare block detected at {url}")
+                    await session.close()
+                    session = get_new_session()
                     if attempt == retries:
                         return '<BLOCKED>'
                     continue
@@ -68,6 +74,8 @@ async def fetch_html(
                 log(f'[{attempt}/{retries}] Timeout fetching {url}')
             except Exception as e:
                 log(f'ERROR fetching {url}: {e} | STATUS CODE {resp.status_code}')
+                await session.close()
+                session = get_new_session()
         if attempt < retries:
             await asyncio.sleep(delay)
         else:
@@ -103,3 +111,9 @@ def is_blocked_page(response: str) -> bool:
     if title and 'attention required' in title.text.lower():
         return True
     return False
+
+
+def get_new_session():
+    profile = random.choice(IMPERSONATE_PROFILES)
+    log(f'[!] Switching session with new impersonate: {profile}')
+    return AsyncSession(impersonate=profile)
