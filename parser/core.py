@@ -58,7 +58,7 @@ async def fetch_html(
                     session.get(url, timeout=30, proxy=proxy),
                     timeout=global_timeout
                 )
-                if resp.status == 403 and is_blocked_page(resp.text):
+                if resp.status_code == 403 and is_blocked_page(resp.text):
                     log(f"[{attempt}/{retries}] Cloudflare block detected by <title> at {url}")
                     if attempt == retries:
                         return '<BLOCKED>'
