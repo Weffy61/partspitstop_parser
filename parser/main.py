@@ -40,16 +40,16 @@ async def main(args):
         await collect(workers.category_worker, core.category_queue, 2)
         await send_message('Собраны категории')
 
-        await collect(workers.year_worker, core.year_queue, 15)
+        await collect(workers.year_worker, core.year_queue, 5)
         await send_message('Собраны года')
 
-        await collect(workers.model_worker, core.model_queue, 15)
+        await collect(workers.model_worker, core.model_queue, 5)
         await send_message('Собраны модели')
 
-        await collect(workers.parts_worker, core.parts_queue, 15)
+        await collect(workers.parts_worker, core.parts_queue, 5)
         await send_message('Собраны части')
 
-        await collect(workers.details_worker, core.details_queue, 15)
+        await collect(workers.details_worker, core.details_queue, 5)
         await send_message('Собраны детали')
 
         await session.close()
