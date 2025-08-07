@@ -2,15 +2,12 @@ import asyncio
 from asyncio import Queue
 
 from bs4 import BeautifulSoup
-from curl_cffi.requests import AsyncSession
 
 from config import BASE_URL, OUTPUT_FILE
 from notifications import send_message, send_end_message, send_error_message
 from . import workers, core
 from .proxy_manager import ProxyManager
 from .utils import normalize_url, log
-
-session = AsyncSession(impersonate='safari_ios')
 
 
 async def collect(worker_func, queue: Queue, workers_count: int):
@@ -27,7 +24,6 @@ async def main(args):
     try:
         proxy_manager = ProxyManager(args.proxies)
         core.proxy_manager = proxy_manager
-        core.session = session
         await send_message('🚀 Парсинг начат')
 
         html = await core.fetch_html(BASE_URL)
@@ -52,7 +48,6 @@ async def main(args):
         await collect(workers.details_worker, core.details_queue, 5)
         await send_message('Собраны детали')
 
-        await session.close()
         log('Parsing process completed successfully.')
         await send_end_message(OUTPUT_FILE)
     except Exception as ex:
