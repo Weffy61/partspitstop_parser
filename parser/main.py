@@ -37,7 +37,7 @@ async def main(args):
             href = normalize_url(a.get('href'), BASE_URL)
             await core.enqueue_url(href, core.category_queue, 'category')
 
-        await collect(workers.category_worker, core.category_queue, 10)
+        await collect(workers.category_worker, core.category_queue, 2)
         await send_message('Собраны категории')
 
         await collect(workers.year_worker, core.year_queue, 15)
