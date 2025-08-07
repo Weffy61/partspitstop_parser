@@ -120,5 +120,4 @@ def is_blocked_page(response: str) -> bool:
 
 def get_new_session():
     profile = random.choice(IMPERSONATE_PROFILES)
-    log(f'[!] Switching session with new impersonate: {profile}')
     return AsyncSession(impersonate=profile)
