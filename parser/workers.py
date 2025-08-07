@@ -17,6 +17,7 @@ async def category_worker() -> None:
                 continue
             if not html:
                 log(f'[category_worker] Empty HTML from {url}')
+                await category_queue.put(url)
                 category_queue.task_done()
                 continue
 
@@ -47,6 +48,7 @@ async def year_worker() -> None:
                 continue
             if not html:
                 log(f"[year_worker] Empty HTML from {url}")
+                await year_queue.put(url)
                 year_queue.task_done()
                 continue
             soup = BeautifulSoup(html, 'lxml')
@@ -75,6 +77,7 @@ async def model_worker() -> None:
                 continue
             if not html:
                 log(f"[model_worker] Empty HTML from {url}")
+                await model_queue.put(url)
                 model_queue.task_done()
                 continue
             soup = BeautifulSoup(html, 'lxml')
@@ -103,6 +106,7 @@ async def parts_worker() -> None:
                 continue
             if not html:
                 log(f"[parts_worker] Empty HTML from {url}")
+                await parts_queue.put(url)
                 parts_queue.task_done()
                 continue
             soup = BeautifulSoup(html, 'lxml')
@@ -131,6 +135,7 @@ async def details_worker() -> None:
                 continue
             if not html:
                 log(f"[details_worker] Empty HTML from {url}")
+                await details_queue.put(url)
                 details_queue.task_done()
                 continue
             soup = BeautifulSoup(html, 'lxml')
