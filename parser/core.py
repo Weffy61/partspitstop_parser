@@ -67,7 +67,7 @@ async def fetch_html(
             except asyncio.TimeoutError:
                 log(f'[{attempt}/{retries}] Timeout fetching {url}')
             except Exception as e:
-                log(f'ERROR fetching {url}: {e} | STATUS CODE {resp.status}')
+                log(f'ERROR fetching {url}: {e} | STATUS CODE {resp.status_code}')
         if attempt < retries:
             await asyncio.sleep(delay)
         else:
