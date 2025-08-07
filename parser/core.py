@@ -58,12 +58,16 @@ async def fetch_html(
                     session.get(url, timeout=30, proxy=proxy),
                     timeout=global_timeout
                 )
+                if resp.status == 403 and is_blocked_page(resp.text):
+                    log(f'CloudFlare error, running task again')
+                    if attempt == retries:
+                        return ''
+                    continue
                 return resp.text
             except asyncio.TimeoutError:
                 log(f'[{attempt}/{retries}] Timeout fetching {url}')
             except Exception as e:
                 log(f'ERROR fetching {url}: {e}')
-                attempt += 1
         if attempt < retries:
             await asyncio.sleep(delay)
         else:
@@ -91,3 +95,11 @@ def get_fitment_select_element(soup: BeautifulSoup) -> str:
     for selector in ['#partsselectlist', '#fitmentselectlistx', '#fitmentselectlist']:
         if soup.select_one(selector):
             return selector.replace('#', '')
+
+
+def is_blocked_page(response: str) -> bool:
+    soup = BeautifulSoup(response, 'lxmx')
+    title = soup.title
+    if title and 'attention required' in title.text.lower():
+        return True
+    return False
