@@ -1,3 +1,4 @@
+from datetime import datetime
 from urllib.parse import urlparse, urljoin, urlunparse
 
 
@@ -12,4 +13,5 @@ def normalize_url(url, base_url):
 
 
 def log(msg: str):
-    print(f"[LOG] {msg}")
+    current_time = datetime.now().strftime('%H:%M:%S')
+    print(f"[{current_time}][LOG] {msg}")
