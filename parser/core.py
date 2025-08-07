@@ -42,7 +42,13 @@ async def save_part(part: dict) -> None:
         await f.flush()
 
 
-async def fetch_html(url: str, retries: int = 5, delay: float = 2.0, global_timeout: float = 40.0) -> str:
+async def fetch_html(
+        url: str,
+        retries: int = 5,
+        delay: float = 2.0,
+        global_timeout:
+        float = 40.0
+) -> str:
     for attempt in range(1, retries + 1):
         async with semaphore:
             try:
@@ -57,6 +63,7 @@ async def fetch_html(url: str, retries: int = 5, delay: float = 2.0, global_time
                 log(f'[{attempt}/{retries}] Timeout fetching {url}')
             except Exception as e:
                 log(f'ERROR fetching {url}: {e}')
+                attempt += 1
         if attempt < retries:
             await asyncio.sleep(delay)
         else:

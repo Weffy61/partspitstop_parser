@@ -142,6 +142,9 @@ async def details_worker() -> None:
                     'price': price
                 }
                 await save_part(part)
+        except AttributeError:
+            log(f'CloudFlare error, running task again')
+            details_queue.put(url)
         except Exception as ex:
             log(f'Uncaught error in details_worker for {url}: {ex}')
         details_queue.task_done()
