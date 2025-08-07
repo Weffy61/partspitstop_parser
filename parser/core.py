@@ -98,7 +98,7 @@ def get_fitment_select_element(soup: BeautifulSoup) -> str:
 
 
 def is_blocked_page(response: str) -> bool:
-    soup = BeautifulSoup(response, 'lxmx')
+    soup = BeautifulSoup(response, 'lxml')
     title = soup.title
     if title and 'attention required' in title.text.lower():
         return True
