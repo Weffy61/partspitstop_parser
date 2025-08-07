@@ -58,6 +58,7 @@ async def fetch_html(
             resp = None
             try:
                 if session is None:
+                    log(f"[fetch_html] Session is None, creating new session")
                     session = get_new_session()
                 proxy = proxy_manager.get() if proxy_manager else None
                 log(f"[{attempt}/{retries}] Fetching: {url} {f'(proxy: {proxy})' if proxy else ''}")
@@ -84,8 +85,15 @@ async def fetch_html(
             except asyncio.TimeoutError:
                 log(f'[{attempt}/{retries}] Timeout fetching {url}')
             except Exception as e:
-                log(f'ERROR fetching {url}: {e} | STATUS CODE {resp.status_code}')
-                await session.close()
+                status = 0
+                if resp is not None:
+                    try:
+                        status = resp.status_code
+                    except Exception:
+                        pass
+                log(f'ERROR fetching {url}: {e} | STATUS CODE {status}')
+                if session:
+                    await session.close()
                 session = get_new_session()
         if attempt < retries:
             await asyncio.sleep(delay)
