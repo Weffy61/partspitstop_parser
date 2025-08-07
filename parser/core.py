@@ -55,6 +55,7 @@ async def fetch_html(
     global session
     for attempt in range(1, retries + 1):
         async with semaphore:
+            resp = None
             try:
                 proxy = proxy_manager.get() if proxy_manager else None
                 log(f"[{attempt}/{retries}] Fetching: {url} {f'(proxy: {proxy})' if proxy else ''}")
@@ -62,12 +63,20 @@ async def fetch_html(
                     session.get(url, timeout=30, proxy=proxy),
                     timeout=global_timeout
                 )
+                html = resp.text
                 if resp.status_code == 403 and is_blocked_page(resp.text):
                     log(f"[{attempt}/{retries}] Cloudflare block detected at {url}")
                     await session.close()
                     session = get_new_session()
                     if attempt == retries:
                         return '<BLOCKED>'
+                    continue
+                if not html.strip():
+                    log(f"[{attempt}/{retries}] Empty response from {url} (possibly blocked)")
+                    if attempt == retries:
+                        return '<EMPTY>'
+                    await session.close()
+                    session = get_new_session()
                     continue
                 return resp.text
             except asyncio.TimeoutError:
@@ -80,7 +89,7 @@ async def fetch_html(
             await asyncio.sleep(delay)
         else:
             log(f'GAVE UP: {url}')
-            return ''
+            return '<ERROR>'
 
 
 async def enqueue_url(url: str, queue: asyncio.Queue, stage: str) -> None:
