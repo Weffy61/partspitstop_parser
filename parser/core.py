@@ -64,7 +64,8 @@ async def fetch_html(
                 )
                 html = resp.text
                 if resp.status_code == 403 and is_blocked_page(resp.text):
-                    log(f"[{attempt}/{retries}] Cloudflare block detected at {url}")
+                    log(f"[{attempt}/{retries}] Cloudflare block detected at {url} "
+                        f"{f'(proxy: {proxy})' if proxy else ''}")
                     if attempt == retries:
                         return '<BLOCKED>'
                     continue
