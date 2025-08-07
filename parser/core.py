@@ -59,15 +59,15 @@ async def fetch_html(
                     timeout=global_timeout
                 )
                 if resp.status == 403 and is_blocked_page(resp.text):
-                    log(f'CloudFlare error, running task again')
+                    log(f"[{attempt}/{retries}] Cloudflare block detected by <title> at {url}")
                     if attempt == retries:
-                        return ''
+                        return '<BLOCKED>'
                     continue
                 return resp.text
             except asyncio.TimeoutError:
                 log(f'[{attempt}/{retries}] Timeout fetching {url}')
             except Exception as e:
-                log(f'ERROR fetching {url}: {e}')
+                log(f'ERROR fetching {url}: {e} | STATUS CODE {resp.status}')
         if attempt < retries:
             await asyncio.sleep(delay)
         else:

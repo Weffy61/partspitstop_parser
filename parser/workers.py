@@ -10,6 +10,11 @@ async def category_worker() -> None:
         url = await category_queue.get()
         try:
             html = await fetch_html(url)
+            if html == '<BLOCKED>':
+                log(f"[category_worker] Blocked by Cloudflare: {url}, retrying")
+                await category_queue.put(url)
+                category_queue.task_done()
+                continue
             if not html:
                 log(f'[category_worker] Empty HTML from {url}')
                 category_queue.task_done()
@@ -35,6 +40,11 @@ async def year_worker() -> None:
         url = await year_queue.get()
         try:
             html = await fetch_html(url)
+            if html == '<BLOCKED>':
+                log(f"[year_worker] Blocked by Cloudflare: {url}, retrying")
+                await year_queue.put(url)
+                year_queue.task_done()
+                continue
             if not html:
                 log(f"[year_worker] Empty HTML from {url}")
                 year_queue.task_done()
@@ -58,6 +68,11 @@ async def model_worker() -> None:
         url = await model_queue.get()
         try:
             html = await fetch_html(url)
+            if html == '<BLOCKED>':
+                log(f"[model_worker] Blocked by Cloudflare: {url}, retrying")
+                await model_queue.put(url)
+                model_queue.task_done()
+                continue
             if not html:
                 log(f"[model_worker] Empty HTML from {url}")
                 model_queue.task_done()
@@ -81,6 +96,11 @@ async def parts_worker() -> None:
         url = await parts_queue.get()
         try:
             html = await fetch_html(url)
+            if html == '<BLOCKED>':
+                log(f"[parts_worker] Blocked by Cloudflare: {url}, retrying")
+                await parts_queue.put(url)
+                parts_queue.task_done()
+                continue
             if not html:
                 log(f"[parts_worker] Empty HTML from {url}")
                 parts_queue.task_done()
@@ -104,6 +124,11 @@ async def details_worker() -> None:
         url = await details_queue.get()
         try:
             html = await fetch_html(url)
+            if html == '<BLOCKED>':
+                log(f"[details_worker] Blocked by Cloudflare: {url}, retrying")
+                await details_queue.put(url)
+                details_queue.task_done()
+                continue
             if not html:
                 log(f"[details_worker] Empty HTML from {url}")
                 details_queue.task_done()
