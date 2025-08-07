@@ -57,6 +57,8 @@ async def fetch_html(
         async with semaphore:
             resp = None
             try:
+                if session is None:
+                    session = get_new_session()
                 proxy = proxy_manager.get() if proxy_manager else None
                 log(f"[{attempt}/{retries}] Fetching: {url} {f'(proxy: {proxy})' if proxy else ''}")
                 resp = await asyncio.wait_for(
