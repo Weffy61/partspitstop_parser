@@ -1,8 +1,11 @@
 from bs4 import BeautifulSoup
 
-from parser.core import save_part, details_queue, fetch_html, category_queue, enqueue_url, year_queue, model_queue, \
-    get_fitment_select_element, is_year_select_page, parts_queue, handle_fetch_result
-from parser.utils import normalize_url, log
+from parser.core import (
+    details_queue, category_queue, enqueue_url, year_queue, model_queue, parts_queue
+)
+from parser.fetcher import fetch_html, handle_fetch_result
+from parser.storage import save_part
+from parser.utils import normalize_url, log, is_year_select_page, get_fitment_select_element
 
 
 async def category_worker() -> None:

@@ -7,6 +7,7 @@ from config import BASE_URL, OUTPUT_FILE, CATEGORY_WORKER_COUNT, YEAR_WORKER_COU
     PARTS_WORKER_COUNT, DETAILS_WORKER_COUNT
 from notifications import send_message, send_end_message, send_error_message
 from . import workers, core
+from .fetcher import fetch_html
 from .proxy_manager import ProxyManager
 from .utils import normalize_url, log
 
@@ -27,7 +28,7 @@ async def main(args):
         core.proxy_manager = proxy_manager
         await send_message('🚀 Парсинг начат')
 
-        html = await core.fetch_html(BASE_URL)
+        html = await fetch_html(BASE_URL)
         soup = BeautifulSoup(html, 'lxml')
         main_div = soup.find(id='content-main')
         for a in main_div.select('div.grid_8 a[href]'):
