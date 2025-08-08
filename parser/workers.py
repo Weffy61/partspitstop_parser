@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 
 from parser.core import save_part, details_queue, fetch_html, category_queue, enqueue_url, year_queue, model_queue, \
-    get_fitment_select_element, is_year_select_page, parts_queue
+    get_fitment_select_element, is_year_select_page, parts_queue, handle_fetch_result
 from parser.utils import normalize_url, log
 
 
@@ -10,21 +10,8 @@ async def category_worker() -> None:
         url = await category_queue.get()
         try:
             html = await fetch_html(url)
-            if html == '<BLOCKED>':
-                log(f"[category_worker] Blocked by Cloudflare: {url}, retrying")
-                await category_queue.put(url)
-                category_queue.task_done()
+            if not await handle_fetch_result(html, url, category_queue, 'category_worker'):
                 continue
-            if html == '<EMPTY>':
-                log(f'[category_worker] Empty response from {url}, retrying')
-                await category_queue.put(url)
-                category_queue.task_done()
-                continue
-            if html == '<ERROR>':
-                log(f"[category_worker] Error fetching {url}")
-                category_queue.task_done()
-                continue
-
             soup = BeautifulSoup(html, 'lxml')
 
             if is_year_select_page(soup):
@@ -45,19 +32,7 @@ async def year_worker() -> None:
         url = await year_queue.get()
         try:
             html = await fetch_html(url)
-            if html == '<BLOCKED>':
-                log(f"[year_worker] Blocked by Cloudflare: {url}, retrying")
-                await year_queue.put(url)
-                year_queue.task_done()
-                continue
-            if html == '<EMPTY>':
-                log(f'[year_worker] Empty response from {url}, retrying')
-                await year_queue.put(url)
-                year_queue.task_done()
-                continue
-            if html == '<ERROR>':
-                log(f"[year_worker] Error fetching {url}")
-                year_queue.task_done()
+            if not await handle_fetch_result(html, url, year_queue, 'year_worker'):
                 continue
             soup = BeautifulSoup(html, 'lxml')
             selector = get_fitment_select_element(soup)
@@ -78,19 +53,7 @@ async def model_worker() -> None:
         url = await model_queue.get()
         try:
             html = await fetch_html(url)
-            if html == '<BLOCKED>':
-                log(f"[model_worker] Blocked by Cloudflare: {url}, retrying")
-                await model_queue.put(url)
-                model_queue.task_done()
-                continue
-            if html == '<EMPTY>':
-                log(f'[model_worker] Empty response from {url}, retrying')
-                await model_queue.put(url)
-                model_queue.task_done()
-                continue
-            if html == '<ERROR>':
-                log(f"[model_worker] Error fetching {url}")
-                model_queue.task_done()
+            if not await handle_fetch_result(html, url, model_queue, 'model_worker'):
                 continue
             soup = BeautifulSoup(html, 'lxml')
             selector = get_fitment_select_element(soup)
@@ -111,19 +74,7 @@ async def parts_worker() -> None:
         url = await parts_queue.get()
         try:
             html = await fetch_html(url)
-            if html == '<BLOCKED>':
-                log(f"[parts_worker] Blocked by Cloudflare: {url}, retrying")
-                await parts_queue.put(url)
-                parts_queue.task_done()
-                continue
-            if html == '<EMPTY>':
-                log(f'[parts_worker] Empty response from {url}, retrying')
-                await parts_queue.put(url)
-                parts_queue.task_done()
-                continue
-            if html == '<ERROR>':
-                log(f"[parts_worker] Error fetching {url}")
-                parts_queue.task_done()
+            if not await handle_fetch_result(html, url, parts_queue, 'parts_worker'):
                 continue
             soup = BeautifulSoup(html, 'lxml')
             elements = soup.select('#partassemthumblist div.wrap')
@@ -144,19 +95,7 @@ async def details_worker() -> None:
         url = await details_queue.get()
         try:
             html = await fetch_html(url)
-            if html == '<BLOCKED>':
-                log(f"[details_worker] Blocked by Cloudflare: {url}, retrying")
-                await details_queue.put(url)
-                details_queue.task_done()
-                continue
-            if html == '<EMPTY>':
-                log(f'[details_worker] Empty response from {url}, retrying')
-                await details_queue.put(url)
-                details_queue.task_done()
-                continue
-            if html == '<ERROR>':
-                log(f"[details_worker] Error fetching {url}")
-                details_queue.task_done()
+            if not await handle_fetch_result(html, url, details_queue, 'details_worker'):
                 continue
             soup = BeautifulSoup(html, 'lxml')
             detail_block = soup.select('#partlist .partlistrow form')

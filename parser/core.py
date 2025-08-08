@@ -122,3 +122,21 @@ def is_blocked_page(response: str) -> bool:
 def get_new_session():
     profile = random.choice(IMPERSONATE_PROFILES)
     return AsyncSession(impersonate=profile)
+
+
+async def handle_fetch_result(html: str, url: str, queue: asyncio.Queue, worker_name: str) -> bool:
+    if html == '<BLOCKED>':
+        log(f"[{worker_name}] Blocked by Cloudflare: {url}, retrying")
+        await queue.put(url)
+        queue.task_done()
+        return False
+    if html == '<EMPTY>':
+        log(f'[{worker_name}] Empty response from {url}, retrying')
+        await queue.put(url)
+        queue.task_done()
+        return False
+    if html == '<ERROR>':
+        log(f"[{worker_name}] Error fetching {url}")
+        queue.task_done()
+        return False
+    return True
