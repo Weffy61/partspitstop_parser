@@ -34,6 +34,11 @@ async def fetch_html(
                     if attempt == retries:
                         return '<BLOCKED>'
                     continue
+                if html is None:
+                    log(f"[{attempt}/{retries}] Response text is None for {url}")
+                    if attempt == retries:
+                        return '<EMPTY>'
+                    continue
                 if not html.strip():
                     log(f"[{attempt}/{retries}] Empty response from {url} (possibly blocked)")
                     if attempt == retries:
