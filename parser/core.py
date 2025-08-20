@@ -19,7 +19,7 @@ model_queue = asyncio.Queue()
 parts_queue = asyncio.Queue()
 details_queue = asyncio.Queue()
 
-semaphore = asyncio.Semaphore(60)
+semaphore = asyncio.Semaphore(5)
 
 
 async def enqueue_url(url: str, queue: asyncio.Queue, stage: str) -> None:
